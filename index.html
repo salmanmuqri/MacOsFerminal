@@ -13,7 +13,7 @@
             color: #fff;
             overflow: hidden;
         }
- Old Browser Warning {
+        .old-browser-warning {
             font-size: 1.2em;
             position: absolute;
             top: 10px;
@@ -83,8 +83,41 @@
             "Beep boop! That command doesn't compute!"
         ];
 
+        const commandOutputs = {
+            'ls': 'dir1  dir2  file1.txt  file2.txt',
+            'cd': 'cd: dir1: Directory changed',
+            'pwd': '/Users/user/home',
+            'mkdir': 'mkdir: dir3: Directory created',
+            'rm': 'rm: file1.txt: File removed',
+            'cp': 'cp: file1.txt to file1_copy.txt: File copied',
+            'mv': 'mv: file1.txt to dir1/file1.txt: File moved',
+            'touch': 'touch: newfile.txt: File created',
+            'cat': 'Hello, this is the content of file1.txt',
+            'less': 'less: file1.txt: Displaying file content (simulated)',
+            'more': 'more: file1.txt: Displaying file content (simulated)',
+            'head': 'head: First 10 lines of file1.txt',
+            'tail': 'tail: Last 10 lines of file1.txt',
+            'grep': 'grep: pattern: Found in file1.txt: "example match"',
+            'find': './dir1/file1.txt\n./dir2/file2.txt',
+            'chmod': 'chmod: 755 file1.txt: Permissions changed',
+            'chown': 'chown: user:group file1.txt: Ownership changed',
+            'ln': 'ln: file1.txt link1: Symbolic link created',
+            'df': 'Filesystem    1K-blocks    Used Available Use% Mounted on\n/dev/disk1s1   50000000  40000000  10000000  80% /',
+            'du': '16K    ./dir1\n8K     ./dir2\n24K    .',
+            'ps': 'PID TTY          TIME CMD\n 1234 ttys000  0:00.01 bash\n 5678 ttys000  0:00.02 ps',
+            'kill': 'kill: 1234: Process terminated',
+            'top': 'Processes: 99 total, 2 running, 97 sleeping, 0 stopped\nCPU usage: 5% user, 3% sys, 92% idle',
+            'who': 'user  console  Apr 19 10:00\nuser  ttys000  Apr 19 10:01',
+            'man': 'man: ls: Manual page for ls (simulated)',
+            'exit': 'exit: Session terminated (simulated)',
+            'sudo': 'sudo: Command executed with elevated privileges (simulated)',
+            'nano': 'nano: file1.txt: Opened in nano editor (simulated)',
+            'vim': 'vim: file1.txt: Opened in vim editor (simulated)',
+            'history': '1  ls\n2  cd dir1\n3  pwd'
+        };
+
         const terminal = document.getElementById('terminal');
-        const commandInput = document.getElementById('command');
+        let commandInput = document.getElementById('command');
 
         function getFunnyError() {
             return funnyErrors[Math.floor(Math.random() * funnyErrors.length)];
@@ -113,11 +146,12 @@
                 if (command === 'clear') {
                     terminal.innerHTML = '<div class="prompt"><input type="text" id="command" autofocus></div>';
                     commandInput = document.getElementById('command');
+                    commandInput.focus();
                     return;
                 }
 
                 if (validCommands.includes(command)) {
-                    addOutput(`${command}: Command executed successfully. (Just kidding, this is a dummy terminal!)`);
+                    addOutput(commandOutputs[command] || `${command}: Command executed (simulated)`);
                 } else {
                     addOutput(getFunnyError(), true);
                 }
