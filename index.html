@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dummy macOS Terminal</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Menlo', 'Consolas', monospace;
+            color: #fff;
+            overflow: hidden;
+        }
+ Old Browser Warning {
+            font-size: 1.2em;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: red;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        #terminal {
+            width: 100vw;
+            height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .prompt {
+            display: flex;
+            align-items: center;
+        }
+        .prompt::before {
+            content: '$ ';
+            color: #0f0;
+            margin-right: 5px;
+        }
+        input {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-family: inherit;
+            font-size: inherit;
+            flex: 1;
+            outline: none;
+        }
+        .output {
+            margin: 10px 0;
+        }
+        .error {
+            color: #ff5555;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal">
+        <div class="output">Welcome to Dummy macOS Terminal! Type a command and press Enter.</div>
+        <div class="prompt">
+            <input type="text" id="command" autofocus>
+        </div>
+    </div>
+    <script>
+        const validCommands = [
+            'ls', 'cd', 'pwd', 'mkdir', 'rm', 'cp', 'mv', 'touch', 'cat', 'less', 'more',
+            'head', 'tail', 'grep', 'find', 'chmod', 'chown', 'ln', 'df', 'du', 'ps',
+            'kill', 'top', 'who', 'man', 'clear', 'exit', 'sudo', 'nano', 'vim', 'history'
+        ];
+
+        const funnyErrors = [
+            "Command not found. Did you mean 'make me a sandwich'?",
+            "Whoops, that command got lost in the Matrix!",
+            "Error: Command not recognized. Try yelling louder?",
+            "Uh-oh, that command just ran away to join the circus!",
+            "Command not found. Have you tried turning it off and on again?",
+            "404: Command not found. Maybe it's hiding under the couch?",
+            "That command is on vacation in Bermuda. Try again later!",
+            "Error: Command buffer overflow. Too much coffee?",
+            "Command not found. Did you check behind the sofa?",
+            "Beep boop! That command doesn't compute!"
+        ];
+
+        const terminal = document.getElementById('terminal');
+        const commandInput = document.getElementById('command');
+
+        function getFunnyError() {
+            return funnyErrors[Math.floor(Math.random() * funnyErrors.length)];
+        }
+
+        function addOutput(text, isError = false) {
+            const outputDiv = document.createElement('div');
+            outputDiv.className = 'output';
+            if (isError) {
+                outputDiv.className += ' error';
+            }
+            outputDiv.textContent = text;
+            terminal.insertBefore(outputDiv, commandInput.parentElement);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        commandInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const command = commandInput.value.trim().toLowerCase();
+                commandInput.value = '';
+
+                if (command === '') {
+                    return;
+                }
+
+                if (command === 'clear') {
+                    terminal.innerHTML = '<div class="prompt"><input type="text" id="command" autofocus></div>';
+                    commandInput = document.getElementById('command');
+                    return;
+                }
+
+                if (validCommands.includes(command)) {
+                    addOutput(`${command}: Command executed successfully. (Just kidding, this is a dummy terminal!)`);
+                } else {
+                    addOutput(getFunnyError(), true);
+                }
+            }
+        });
+
+        commandInput.focus();
+    </script>
+</body>
+</html>
