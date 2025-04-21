@@ -1,186 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dummy macOS Terminal</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #000;
-            font-family: 'Menlo', 'Consolas', monospace;
-            color: #fff;
-            overflow: hidden;
-        }
-        .old-browser-warning {
-            font-size: 1.2em;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: red;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 5px 10px;
-            border-radius: 5px;
-        }
-        #terminal {
-            width: 100vw;
-            height: 100vh;
-            padding: 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
-        .prompt {
-            display: flex;
-            align-items: center;
-        }
-        .prompt::before {
-            content: '$ ';
-            color: #0f0;
-            margin-right: 5px;
-        }
-        input {
-            background: transparent;
-            border: none;
-            color: #fff;
-            font-family: inherit;
-            font-size: inherit;
-            flex: 1;
-            outline: none;
-        }
-        .output {
-            margin: 10px 0;
-        }
-        .error {
-            color: #ff5555;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dummy macOS Terminal</title>
+  <style>
+    :root {
+      --bg-color: #000;
+      --text-color: #fff;
+      --prompt-color: #0f0;
+      --error-color: #ff5555;
+    }
+
+    body.light {
+      --bg-color: #f5f5f5;
+      --text-color: #111;
+      --prompt-color: #008000;
+      --error-color: #c00;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-color);
+      font-family: 'Menlo', 'Consolas', monospace;
+      color: var(--text-color);
+      overflow: hidden;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #theme-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      color: var(--text-color);
+      border: 1px solid var(--text-color);
+      padding: 5px 10px;
+      font-size: 0.9em;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #terminal {
+      width: 100vw;
+      height: 100vh;
+      padding: 40px 20px 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .prompt {
+      display: flex;
+      align-items: center;
+    }
+
+    .prompt::before {
+      content: '$ ';
+      color: var(--prompt-color);
+      margin-right: 5px;
+    }
+
+    input {
+      background: transparent;
+      border: none;
+      color: var(--text-color);
+      font-family: inherit;
+      font-size: inherit;
+      flex: 1;
+      outline: none;
+    }
+
+    .output {
+      margin: 10px 0;
+    }
+
+    .error {
+      color: var(--error-color);
+    }
+  </style>
 </head>
 <body>
-    <div id="terminal">
-        <div class="output">Welcome to Dummy macOS Terminal! Type a command and press Enter.</div>
-        <div class="prompt">
-            <input type="text" id="command" autofocus>
-        </div>
+  <button id="theme-toggle">Toggle Theme</button>
+  <div id="terminal">
+    <div class="output">Welcome to Dummy macOS Terminal! Type a command and press Enter.</div>
+    <div class="prompt">
+      <input type="text" id="command" autofocus />
     </div>
-    <script>
-        const validCommands = [
-            'ls', 'cd', 'pwd', 'mkdir', 'rm', 'cp', 'mv', 'touch', 'cat', 'less', 'more',
-            'head', 'tail', 'grep', 'find', 'chmod', 'chown', 'ln', 'df', 'du', 'ps',
-            'kill', 'top', 'who', 'man', 'clear', 'exit', 'sudo', 'nano', 'vim', 'history'
-        ];
-    
-        const funnyErrors = [
-            "Command not found. Did you mean 'make me a sandwich'?",
-            "Whoops, that command got lost in the Matrix!",
-            "Error: Command not recognized. Try yelling louder?",
-            "Uh-oh, that command just ran away to join the circus!",
-            "Command not found. Have you tried turning it off and on again?",
-            "404: Command not found. Maybe it's hiding under the couch?",
-            "That command is on vacation in Bermuda. Try again later!",
-            "Error: Command buffer overflow. Too much coffee?",
-            "Command not found. Did you check behind the sofa?",
-            "Beep boop! That command doesn't compute!"
-        ];
-    
-        const commandOutputs = {
-            'ls': 'dir1  dir2  file1.txt  file2.txt',
-            'cd': 'cd: dir1: Directory changed',
-            'pwd': '/Users/user/home',
-            'mkdir': 'mkdir: dir3: Directory created',
-            'rm': 'rm: file1.txt: File removed',
-            'cp': 'cp: file1.txt to file1_copy.txt: File copied',
-            'mv': 'mv: file1.txt to dir1/file1.txt: File moved',
-            'touch': 'touch: newfile.txt: File created',
-            'cat': 'Hello, this is the content of file1.txt',
-            'less': 'less: file1.txt: Displaying file content (simulated)',
-            'more': 'more: file1.txt: Displaying file content (simulated)',
-            'head': 'head: First 10 lines of file1.txt',
-            'tail': 'tail: Last 10 lines of file1.txt',
-            'grep': 'grep: pattern: Found in file1.txt: "example match"',
-            'find': './dir1/file1.txt\n./dir2/file2.txt',
-            'chmod': 'chmod: 755 file1.txt: Permissions changed',
-            'chown': 'chown: user:group file1.txt: Ownership changed',
-            'ln': 'ln: file1.txt link1: Symbolic link created',
-            'df': 'Filesystem    1K-blocks    Used Available Use% Mounted on\n/dev/disk1s1   50000000  40000000  10000000  80% /',
-            'du': '16K    ./dir1\n8K     ./dir2\n24K    .',
-            'ps': 'PID TTY          TIME CMD\n 1234 ttys000  0:00.01 bash\n 5678 ttys000  0:00.02 ps',
-            'kill': 'kill: 1234: Process terminated',
-            'top': 'Processes: 99 total, 2 running, 97 sleeping, 0 stopped\nCPU usage: 5% user, 3% sys, 92% idle',
-            'who': 'user  console  Apr 19 10:00\nuser  ttys000  Apr 19 10:01',
-            'man': 'man: ls: Manual page for ls (simulated)',
-            'exit': 'exit: Session terminated (simulated)',
-            'sudo': 'sudo: Command executed with elevated privileges (simulated)',
-            'nano': 'nano: file1.txt: Opened in nano editor (simulated)',
-            'vim': 'vim: file1.txt: Opened in vim editor (simulated)',
-            'history': '1  ls\n2  cd dir1\n3  pwd'
-        };
-    
-        const terminal = document.getElementById('terminal');
-        let commandInput = document.getElementById('command');
-    
-        let commandHistory = [];
-        let historyIndex = -1;
-    
-        function getFunnyError() {
-            return funnyErrors[Math.floor(Math.random() * funnyErrors.length)];
-        }
-    
-        function addOutput(text, isError = false) {
-            const outputDiv = document.createElement('div');
-            outputDiv.className = 'output';
-            if (isError) {
-                outputDiv.className += ' error';
-            }
-            outputDiv.textContent = text;
-            terminal.insertBefore(outputDiv, commandInput.parentElement);
-            terminal.scrollTop = terminal.scrollHeight;
-        }
-    
-        commandInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const command = commandInput.value.trim().toLowerCase();
-                if (command !== '') {
-                    commandHistory.push(command);
-                    historyIndex = commandHistory.length;
-                }
-    
-                commandInput.value = '';
-    
-                if (command === '') {
-                    return;
-                }
-    
-                if (command === 'clear') {
-                    terminal.innerHTML = '<div class="prompt"><input type="text" id="command" autofocus></div>';
-                    commandInput = document.getElementById('command');
-                    commandInput.focus();
-                    return;
-                }
-    
-                if (validCommands.includes(command)) {
-                    addOutput(commandOutputs[command] || `${command}: Command executed (simulated)`);
-                } else {
-                    addOutput(getFunnyError(), true);
-                }
-            } else if (e.key === 'ArrowUp') {
-                if (historyIndex > 0) {
-                    historyIndex--;
-                    commandInput.value = commandHistory[historyIndex];
-                }
-            } else if (e.key === 'ArrowDown') {
-                if (historyIndex < commandHistory.length - 1) {
-                    historyIndex++;
-                    commandInput.value = commandHistory[historyIndex];
-                } else {
-                    commandInput.value = '';
-                    historyIndex = commandHistory.length;
-                }
-            }
-        });
-    
+  </div>
+
+  <script>
+    const validCommands = [
+      'ls', 'cd', 'pwd', 'mkdir', 'rm', 'cp', 'mv', 'touch', 'cat', 'less', 'more',
+      'head', 'tail', 'grep', 'find', 'chmod', 'chown', 'ln', 'df', 'du', 'ps',
+      'kill', 'top', 'who', 'man', 'clear', 'exit', 'sudo', 'nano', 'vim', 'history'
+    ];
+
+    const funnyErrors = [
+      "Command not found. Did you mean 'make me a sandwich'?",
+      "Whoops, that command got lost in the Matrix!",
+      "Error: Command not recognized. Try yelling louder?",
+      "Uh-oh, that command just ran away to join the circus!",
+      "Command not found. Have you tried turning it off and on again?",
+      "404: Command not found. Maybe it's hiding under the couch?",
+      "That command is on vacation in Bermuda. Try again later!",
+      "Error: Command buffer overflow. Too much coffee?",
+      "Command not found. Did you check behind the sofa?",
+      "Beep boop! That command doesn't compute!"
+    ];
+
+    const commandOutputs = {
+      'ls': 'dir1  dir2  file1.txt  file2.txt',
+      'cd': 'cd: dir1: Directory changed',
+      'pwd': '/Users/user/home',
+      'mkdir': 'mkdir: dir3: Directory created',
+      'rm': 'rm: file1.txt: File removed',
+      'cp': 'cp: file1.txt to file1_copy.txt: File copied',
+      'mv': 'mv: file1.txt to dir1/file1.txt: File moved',
+      'touch': 'touch: newfile.txt: File created',
+      'cat': 'Hello, this is the content of file1.txt',
+      'less': 'less: file1.txt: Displaying file content (simulated)',
+      'more': 'more: file1.txt: Displaying file content (simulated)',
+      'head': 'head: First 10 lines of file1.txt',
+      'tail': 'tail: Last 10 lines of file1.txt',
+      'grep': 'grep: pattern: Found in file1.txt: "example match"',
+      'find': './dir1/file1.txt\n./dir2/file2.txt',
+      'chmod': 'chmod: 755 file1.txt: Permissions changed',
+      'chown': 'chown: user:group file1.txt: Ownership changed',
+      'ln': 'ln: file1.txt link1: Symbolic link created',
+      'df': 'Filesystem    1K-blocks    Used Available Use% Mounted on\n/dev/disk1s1   50000000  40000000  10000000  80% /',
+      'du': '16K    ./dir1\n8K     ./dir2\n24K    .',
+      'ps': 'PID TTY          TIME CMD\n 1234 ttys000  0:00.01 bash\n 5678 ttys000  0:00.02 ps',
+      'kill': 'kill: 1234: Process terminated',
+      'top': 'Processes: 99 total, 2 running, 97 sleeping, 0 stopped\nCPU usage: 5% user, 3% sys, 92% idle',
+      'who': 'user  console  Apr 19 10:00\nuser  ttys000  Apr 19 10:01',
+      'man': 'man: ls: Manual page for ls (simulated)',
+      'exit': 'exit: Session terminated (simulated)',
+      'sudo': 'sudo: Command executed with elevated privileges (simulated)',
+      'nano': 'nano: file1.txt: Opened in nano editor (simulated)',
+      'vim': 'vim: file1.txt: Opened in vim editor (simulated)',
+      'history': '1  ls\n2  cd dir1\n3  pwd'
+    };
+
+    const terminal = document.getElementById('terminal');
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    let commandInput = document.getElementById('command');
+
+    let history = [];
+    let historyIndex = -1;
+
+    function getFunnyError() {
+      return funnyErrors[Math.floor(Math.random() * funnyErrors.length)];
+    }
+
+    function addOutput(text, isError = false) {
+      const outputDiv = document.createElement('div');
+      outputDiv.className = 'output';
+      if (isError) outputDiv.classList.add('error');
+      outputDiv.textContent = text;
+      terminal.insertBefore(outputDiv, commandInput.parentElement);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function handleCommand(command) {
+      if (command === '') return;
+
+      history.push(command);
+      historyIndex = history.length;
+
+      if (command === 'clear') {
+        terminal.innerHTML = `<button id="theme-toggle">Toggle Theme</button><div class="prompt"><input type="text" id="command" autofocus></div>`;
+        commandInput = document.getElementById('command');
+        document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
         commandInput.focus();
-    </script>
-    
+        return;
+      }
+
+      if (validCommands.includes(command)) {
+        addOutput(commandOutputs[command] || `${command}: Command executed (simulated)`);
+      } else {
+        addOutput(getFunnyError(), true);
+      }
+    }
+
+    commandInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const cmd = commandInput.value.trim().toLowerCase();
+        commandInput.value = '';
+        handleCommand(cmd);
+      }
+
+      if (e.key === 'ArrowUp') {
+        if (historyIndex > 0) {
+          historyIndex--;
+          commandInput.value = history[historyIndex];
+        }
+        e.preventDefault();
+      }
+
+      if (e.key === 'ArrowDown') {
+        if (historyIndex < history.length - 1) {
+          historyIndex++;
+          commandInput.value = history[historyIndex];
+        } else {
+          commandInput.value = '';
+          historyIndex = history.length;
+        }
+        e.preventDefault();
+      }
+    });
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+    }
+
+    themeToggleBtn.addEventListener('click', toggleTheme);
+    commandInput.focus();
+  </script>
 </body>
 </html>
