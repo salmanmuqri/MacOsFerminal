@@ -69,7 +69,7 @@
             'head', 'tail', 'grep', 'find', 'chmod', 'chown', 'ln', 'df', 'du', 'ps',
             'kill', 'top', 'who', 'man', 'clear', 'exit', 'sudo', 'nano', 'vim', 'history'
         ];
-
+    
         const funnyErrors = [
             "Command not found. Did you mean 'make me a sandwich'?",
             "Whoops, that command got lost in the Matrix!",
@@ -82,7 +82,7 @@
             "Command not found. Did you check behind the sofa?",
             "Beep boop! That command doesn't compute!"
         ];
-
+    
         const commandOutputs = {
             'ls': 'dir1  dir2  file1.txt  file2.txt',
             'cd': 'cd: dir1: Directory changed',
@@ -115,14 +115,17 @@
             'vim': 'vim: file1.txt: Opened in vim editor (simulated)',
             'history': '1  ls\n2  cd dir1\n3  pwd'
         };
-
+    
         const terminal = document.getElementById('terminal');
         let commandInput = document.getElementById('command');
-
+    
+        let commandHistory = [];
+        let historyIndex = -1;
+    
         function getFunnyError() {
             return funnyErrors[Math.floor(Math.random() * funnyErrors.length)];
         }
-
+    
         function addOutput(text, isError = false) {
             const outputDiv = document.createElement('div');
             outputDiv.className = 'output';
@@ -133,32 +136,51 @@
             terminal.insertBefore(outputDiv, commandInput.parentElement);
             terminal.scrollTop = terminal.scrollHeight;
         }
-
+    
         commandInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 const command = commandInput.value.trim().toLowerCase();
+                if (command !== '') {
+                    commandHistory.push(command);
+                    historyIndex = commandHistory.length;
+                }
+    
                 commandInput.value = '';
-
+    
                 if (command === '') {
                     return;
                 }
-
+    
                 if (command === 'clear') {
                     terminal.innerHTML = '<div class="prompt"><input type="text" id="command" autofocus></div>';
                     commandInput = document.getElementById('command');
                     commandInput.focus();
                     return;
                 }
-
+    
                 if (validCommands.includes(command)) {
                     addOutput(commandOutputs[command] || `${command}: Command executed (simulated)`);
                 } else {
                     addOutput(getFunnyError(), true);
                 }
+            } else if (e.key === 'ArrowUp') {
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    commandInput.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    commandInput.value = commandHistory[historyIndex];
+                } else {
+                    commandInput.value = '';
+                    historyIndex = commandHistory.length;
+                }
             }
         });
-
+    
         commandInput.focus();
     </script>
+    
 </body>
 </html>
